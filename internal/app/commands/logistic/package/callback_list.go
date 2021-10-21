@@ -6,6 +6,7 @@ import (
 	tgbotapi "github.com/go-telegram-bot-api/telegram-bot-api"
 	"github.com/ozonmp/omp-bot/internal/app/path"
 	"log"
+	"strings"
 )
 
 type CallbackListData struct {
@@ -31,8 +32,6 @@ func (c *PackageCommander) CallbackList(callback *tgbotapi.CallbackQuery, callba
 		return
 	}
 
-	outputMessage := ""
-
 	packages, err := c.packageService.List(callbackListData.Offset, callbackListData.Limit)
 
 	if err != nil {
@@ -40,12 +39,13 @@ func (c *PackageCommander) CallbackList(callback *tgbotapi.CallbackQuery, callba
 		return
 	}
 
+	var outputMessage strings.Builder
+
 	for _, p := range packages {
-		outputMessage += fmt.Sprint(&p)
-		outputMessage += "\n"
+		outputMessage.WriteString(fmt.Sprintf("%s\n", &p))
 	}
 
-	msg := tgbotapi.NewMessage(callback.Message.Chat.ID, outputMessage)
+	msg := tgbotapi.NewMessage(callback.Message.Chat.ID, outputMessage.String())
 
 	buttons, err := createButtons(callbackListData, c.packageService.Count())
 
